@@ -26,23 +26,22 @@ const neuroscienceTerms = [
 ];
 
 // Fonction pour vérifier si le texte contient des termes de neurosciences
-const containsNeuroscienceTerms = (text) => {
-    return neuroscienceTerms.some((term) =>
-        text.toLowerCase().includes(term)
-    );
-};
+const containsNeuroscienceTerms = (text) =>
+    neuroscienceTerms.some((term) => text.toLowerCase().includes(term));
 
 // Fonction pour générer la réponse du bot en appelant le backend sécurisé
 const generateBotResponse = async (incomingMessageDiv) => {
     const messageElement = incomingMessageDiv.querySelector(".message-text");
 
     try {
-        // Remplacer l'URL par celle de ton serveur déployé
-        const response = await fetch("https://server-hpbp0uijy-ibrahim-bambas-projects-b3a8d0a2.vercel.app/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: userData.message }),
-        });
+        const response = await fetch(
+            "https://server-hpbp0uijy-ibrahim-bambas-projects-b3a8d0a2.vercel.app/api/chat",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userData.message }),
+            }
+        );
 
         const data = await response.json();
 
@@ -72,9 +71,7 @@ const generateBotResponse = async (incomingMessageDiv) => {
 };
 
 // Objet pour stocker les données de l'utilisateur
-const userData = {
-    message: null,
-};
+const userData = { message: null };
 
 // Fonction pour gérer l'envoi des messages de l'utilisateur
 const handleOutgoingMessage = (e) => {
@@ -94,7 +91,7 @@ const handleOutgoingMessage = (e) => {
     chatBody.appendChild(outgoingMessageDiv);
     chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
 
-    // Simuler la réponse du bot avec indicateur de réflexion après un délai
+    // Afficher le message de réflexion du bot après un petit délai
     setTimeout(() => {
         const messageContent = `<span class="material-symbols-outlined">
                 smart_toy
