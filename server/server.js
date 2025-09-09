@@ -5,18 +5,26 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 
-// Middleware CORS pour GitHub Pages
+// ✅ Middleware CORS amélioré
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "https://bambino48.github.io");
-    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    if (req.method === "OPTIONS") return res.sendStatus(204);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    if (req.method === "OPTIONS") {
+        return res.status(204).end(); // Répond proprement à la requête preflight
+    }
+
     next();
 });
 
+// ✅ Route principale
 app.post("/api/chat", async (req, res) => {
     const { message } = req.body;
-    if (!message || message.trim() === "") return res.status(400).json({ error: "Message vide" });
+    if (!message || message.trim() === "") {
+        return res.status(400).json({ error: "Message vide" });
+    }
 
     try {
         const response = await fetch(
@@ -27,9 +35,12 @@ app.post("/api/chat", async (req, res) => {
                 body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] }),
             }
         );
+
         const data = await response.json();
-        if (!response.ok || !data.candidates?.[0]?.content?.parts?.[0]?.text)
+
+        if (!response.ok || !data.candidates?.[0]?.content?.parts?.[0]?.text) {
             return res.status(500).json({ error: "Réponse API invalide" });
+        }
 
         res.json(data);
     } catch (error) {
@@ -38,4 +49,4 @@ app.post("/api/chat", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
