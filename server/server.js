@@ -11,12 +11,16 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.setHeader("Access-Control-Allow-Credentials", "true");
-
-    if (req.method === "OPTIONS") {
-        return res.status(204).end(); // Répond proprement à la requête preflight
-    }
-
     next();
+});
+
+// ✅ Route OPTIONS universelle pour le preflight
+app.options("*", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "https://bambino48.github.io");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    return res.status(204).send();
 });
 
 // ✅ Route principale
