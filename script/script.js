@@ -35,7 +35,7 @@ const generateBotResponse = async (incomingMessageDiv) => {
 
     try {
         const response = await fetch(
-            "https://server-5d6sqmbr0-ibrahim-bambas-projects-b3a8d0a2.vercel.app/api/chat",
+            "https://server-1aj6oz7b3-ibrahim-bambas-projects-b3a8d0a2.vercel.app/api/chat",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
