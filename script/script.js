@@ -38,7 +38,7 @@ const generateBotResponse = async (incomingMessageDiv) => {
 
     try {
         // Remplacer l'URL par celle de ton serveur déployé
-        const response = await fetch("https://vercel.com/ibrahim-bambas-projects-b3a8d0a2/server/settings", {
+        const response = await fetch("https://server-hpbp0uijy-ibrahim-bambas-projects-b3a8d0a2.vercel.app/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: userData.message }),
