@@ -3,10 +3,6 @@ const chatBody = document.querySelector(".chatbot-body");
 const messageInput = document.querySelector(".message-input");
 const sendMessageButton = document.querySelector("#send-message");
 
-// Configuration de l'API
-const API_KEY = "AIzaSyDJl0YG4YQmdYd3ZOj749jYgX_nCDn8tKQ"; // Remplacez par votre clé API
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-
 // Fonction pour créer un élément de message avec des classes dynamiques et le retourner
 const createMessageElement = (content, ...classes) => {
     const div = document.createElement("div");
@@ -31,34 +27,33 @@ const neuroscienceTerms = [
 
 // Fonction pour vérifier si le texte contient des termes de neurosciences
 const containsNeuroscienceTerms = (text) => {
-    return neuroscienceTerms.some((term) => text.toLowerCase().includes(term));
+    return neuroscienceTerms.some((term) =>
+        text.toLowerCase().includes(term)
+    );
 };
 
-// Fonction pour générer la réponse du bot en utilisant l'API
+// Fonction pour générer la réponse du bot en appelant le backend sécurisé
 const generateBotResponse = async (incomingMessageDiv) => {
     const messageElement = incomingMessageDiv.querySelector(".message-text");
 
-    // Options de la requête API
-    const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [
-                {
-                    parts: [{ text: userData.message }],
-                },
-            ],
-        }),
-    };
     try {
-        const response = await fetch(API_URL, requestOptions);
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error.message);
+        // Remplacer l'URL par celle de ton serveur déployé
+        const response = await fetch("http://localhost:3000/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: userData.message }),
+        });
 
-        // Extraire et afficher le texte de la réponse du bot
-        let apiResponseText = data.candidates[0].content.parts[0].text
-            .replace(/\*\*(.*?)\*\*/g, "$1") // Supprime les éventuels caractères gras
-            .trim();
+        const data = await response.json();
+
+        let apiResponseText = "Erreur : aucune réponse de l'IA.";
+
+        // Vérifie que la réponse contient bien le texte attendu
+        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+            apiResponseText = data.candidates[0].content.parts[0].text
+                .replace(/\*\*(.*?)\*\*/g, "$1")
+                .trim();
+        }
 
         // Vérifie si la réponse contient des termes de neurosciences
         if (!containsNeuroscienceTerms(apiResponseText)) {
@@ -68,7 +63,8 @@ const generateBotResponse = async (incomingMessageDiv) => {
 
         messageElement.innerText = apiResponseText;
     } catch (error) {
-        console.log(error);
+        console.error("Erreur fetch:", error);
+        messageElement.innerText = "Erreur : impossible de récupérer la réponse.";
     } finally {
         incomingMessageDiv.classList.remove("thinking");
         chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
@@ -84,6 +80,7 @@ const userData = {
 const handleOutgoingMessage = (e) => {
     e.preventDefault();
     userData.message = messageInput.value.trim();
+    if (!userData.message) return;
     messageInput.value = "";
 
     // Créer et afficher le message de l'utilisateur
@@ -97,7 +94,7 @@ const handleOutgoingMessage = (e) => {
     chatBody.appendChild(outgoingMessageDiv);
     chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
 
-    // Simuler la réponse du bot avec un indicateur de réflexion après un délai
+    // Simuler la réponse du bot avec indicateur de réflexion après un délai
     setTimeout(() => {
         const messageContent = `<span class="material-symbols-outlined">
                 smart_toy
@@ -122,10 +119,7 @@ const handleOutgoingMessage = (e) => {
 
 // Gérer l'appui sur la touche Entrée pour envoyer des messages
 messageInput.addEventListener("keydown", (e) => {
-    const userMessage = e.target.value.trim();
-    if (e.key === "Enter" && userMessage) {
-        handleOutgoingMessage(e);
-    }
+    if (e.key === "Enter") handleOutgoingMessage(e);
 });
 
 // Gérer le clic sur le bouton d'envoi pour envoyer des messages
