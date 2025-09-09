@@ -6,21 +6,26 @@ const app = express();
 app.use(express.json());
 
 // ✅ Middleware CORS amélioré
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "https://bambino48.github.io",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials": "true"
+};
+
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "https://bambino48.github.io");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
+    for (const [key, value] of Object.entries(corsHeaders)) {
+        res.setHeader(key, value);
+    }
     next();
 });
 
-// ✅ Route OPTIONS universelle pour le preflight
-app.options("*", (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "https://bambino48.github.io");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    return res.status(204).send();
+// ✅ Route OPTIONS universelle (Express 5 compatible)
+app.options("/*", (req, res) => {
+    for (const [key, value] of Object.entries(corsHeaders)) {
+        res.setHeader(key, value);
+    }
+    res.status(204).send();
 });
 
 // ✅ Route principale
@@ -52,5 +57,6 @@ app.post("/api/chat", async (req, res) => {
     }
 });
 
+// ✅ Démarrage du serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
