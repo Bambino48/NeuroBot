@@ -1,17 +1,25 @@
-// server/server.js
 const express = require("express");
 const fetch = require("node-fetch");
-const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-// Endpoint pour le chatbot
+// Middleware CORS personnalisé pour GitHub Pages
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "https://bambino48.github.io"); // ton frontend
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    // Répondre immédiatement aux requêtes OPTIONS (preflight)
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+    next();
+});
+
+// Endpoint chatbot
 app.post("/api/chat", async (req, res) => {
     const { message } = req.body;
-
     if (!message || message.trim() === "") {
         return res.status(400).json({ error: "Le message est vide." });
     }
@@ -22,16 +30,13 @@ app.post("/api/chat", async (req, res) => {
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: message }] }],
-                }),
+                body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] }),
             }
         );
 
         const data = await response.json();
 
-        // Vérifie que la réponse contient le texte attendu
-        if (!response.ok || !data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+        if (!response.ok || !data.candidates?.[0]?.content?.parts?.[0]?.text) {
             return res.status(500).json({ error: data.error?.message || "Réponse API invalide." });
         }
 
