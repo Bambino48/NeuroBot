@@ -7,24 +7,40 @@ app.use(express.json());
 
 // ✅ Middleware CORS amélioré
 const corsHeaders = {
-    "Access-Control-Allow-Origin": "https://bambino48.github.io",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Credentials": "true"
 };
 
+const allowedOrigins = [
+    "https://bambino48.github.io",
+    "http://127.0.0.1:5500"
+];
+
 app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+
     for (const [key, value] of Object.entries(corsHeaders)) {
         res.setHeader(key, value);
     }
+
     next();
 });
 
 // ✅ Route OPTIONS universelle (Express 5 compatible)
-app.options("/*", (req, res) => {
+app.options(/^\/.*$/, (req, res) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+
     for (const [key, value] of Object.entries(corsHeaders)) {
         res.setHeader(key, value);
     }
+
     res.status(204).send();
 });
 
@@ -38,7 +54,7 @@ app.post("/api/chat", async (req, res) => {
 
     try {
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -55,6 +71,7 @@ app.post("/api/chat", async (req, res) => {
 
         res.json(data);
     } catch (error) {
+        console.error("Erreur Gemini:", error);
         res.status(500).json({ error: error.message });
     }
 });
