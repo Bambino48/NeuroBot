@@ -30,6 +30,7 @@ app.options("/*", (req, res) => {
 
 // ✅ Route principale
 app.post("/api/chat", async (req, res) => {
+    console.log("Requête reçue:", req.body);
     const { message } = req.body;
     if (!message || message.trim() === "") {
         return res.status(400).json({ error: "Message vide" });
@@ -46,6 +47,7 @@ app.post("/api/chat", async (req, res) => {
         );
 
         const data = await response.json();
+        console.log("Réponse API:", data);
 
         if (!response.ok || !data.candidates?.[0]?.content?.parts?.[0]?.text) {
             return res.status(500).json({ error: "Réponse API invalide" });
